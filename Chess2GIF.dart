@@ -5,7 +5,7 @@ import 'Rep2GIF.dart';
 void main(List<String> args) {
 
   PGNParser parser = new PGNParser();
-  List<String> FENs = parser.parsePGN();
+  List<List<String>> FENs = parser.parsePGN();
   
   FEN2Rep rep = new FEN2Rep();
   List<List<List<String>>> boardRepresentation = rep.getRepresentation(FENs);

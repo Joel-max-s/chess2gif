@@ -75,5 +75,3 @@ class svgSamples {
     File(filename).writeAsString(currentBoard);
   }
 }
-
-//Test

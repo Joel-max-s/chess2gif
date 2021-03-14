@@ -17,12 +17,11 @@ class Rep2GIF {
       print('$count from ${reps.length} are ready');
       count++;
     }
-
     makeGIF(gifImages);
   }
 
   void makeGIF(List images) {
-    GifEncoder encoder = new GifEncoder(delay: 30, repeat: 0, samplingFactor: 100);
+    GifEncoder encoder = new GifEncoder(delay: 100, repeat: 0, samplingFactor: 1000);
     for (var frame in images) {
       encoder.addFrame(frame);
     }
@@ -52,6 +51,9 @@ class Rep2GIF {
         case 'k':
           imagePart = copyCrop(image, 0, 1080, 180, 180);
           break;
+        case 'k+':
+          imagePart = copyCrop(image, 0, 1260, 180, 180);
+          break;
         case 'p':
           imagePart = copyCrop(image, 0, 180, 180, 180);
           break;
@@ -69,6 +71,9 @@ class Rep2GIF {
           break;
         case 'K':
           imagePart = copyCrop(image, 720, 1080, 180, 180);
+          break;
+        case 'K+':
+          imagePart = copyCrop(image, 720, 1260, 180, 180);
           break;
         case 'P':
           imagePart = copyCrop(image, 720, 180, 180, 180);
@@ -93,6 +98,9 @@ class Rep2GIF {
         case 'k':
           imagePart = copyCrop(image, 180, 1080, 180, 180);
           break;
+        case 'k+':
+          imagePart = copyCrop(image, 180, 1260, 180, 180);
+          break;
         case 'p':
           imagePart = copyCrop(image, 180, 180, 180, 180);
           break;
@@ -110,6 +118,9 @@ class Rep2GIF {
           break;
         case 'K':
           imagePart = copyCrop(image, 900, 1080, 180, 180);
+          break;
+        case 'K+':
+          imagePart = copyCrop(image, 900, 1260, 180, 180);
           break;
         case 'P':
           imagePart = copyCrop(image, 900, 180, 180, 180);
