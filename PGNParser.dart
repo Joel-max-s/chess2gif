@@ -8,7 +8,7 @@ class PGNParser {
     RegExp firstSplit = new RegExp(r'[0-9]+.\ *(([a-zA-Z0-9+-]+\ [a-zA-Z0-9+-]+\ )|([a-zA-Z0-9+-]+\ ))');
     RegExp secondSplit = new RegExp(r'[a-zA-Z][a-zA-Z0-9+-]+');
 
-    String pgn = File('test.pgn').readAsStringSync().replaceAll('\n', ' '); 
+    String pgn = File('testGame.pgn').readAsStringSync().replaceAll('\n', ' '); 
     
     print(pgn);
 
@@ -34,8 +34,6 @@ class PGNParser {
   List<List<String>> generateFENS(List<String> moves) {
     Chess chess = new Chess();
     List<List<String>> FENs = [['rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'], ['']];
-    //FENs[0].add('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
-    //FENs[1].add('');
 
     for (var move in moves) {
       var turned = chess.turn;

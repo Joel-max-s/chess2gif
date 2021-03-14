@@ -1,6 +1,7 @@
 class FEN2Rep {
 
   List<List<List<String>>> getRepresentation(List<List<String>> fens) {
+    
     List<List<List<String>>> boardRepresentations = List.empty(growable: true);
 
     for (var i = 0; i < fens[0].length; i++) {

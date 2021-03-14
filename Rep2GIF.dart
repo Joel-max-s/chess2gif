@@ -3,33 +3,33 @@ import 'dart:io';
 
 class Rep2GIF {
   void generateGIFImages(List<List<List<String>>> reps) {
+    GifEncoder encoder = new GifEncoder(delay: 100, repeat: 0, samplingFactor: 100);
+
     int count = 0;
-    var gifImages = new List.empty(growable: true);
+    var lastimage;
     for (var rep in reps) {
-      var newImage = Image(1440, 1440);
+      Image newImage;
+      if(count == 0)
+        newImage = new Image(1440, 1440);
+      else
+        newImage = lastimage;
       for (int i = 0; i < rep.length; i++) {
         for (int j = 0; j < rep[i].length; j++) {
-          var piece = getPiece(rep[i][j], i, j);
-          copyInto(newImage, piece, dstX: j * 180, dstY: i * 180);
+          if(count == 0 || reps[count - 1][i][j] != reps[count][i][j]) {
+            var piece = getPiece(rep[i][j], i, j);
+            copyInto(newImage, piece, dstX: j * 180, dstY: i * 180);
+          }
         }
       }
-      gifImages.add(newImage);
-      print('$count from ${reps.length} are ready');
+      encoder.addFrame(newImage);
+      lastimage = newImage;
+      print('${count + 1} from ${reps.length} are ready');
       count++;
     }
-    makeGIF(gifImages);
+    final animation = encoder.finish();
+    File('animation.gif').writeAsBytesSync(animation);
   }
-
-  void makeGIF(List images) {
-    GifEncoder encoder = new GifEncoder(delay: 100, repeat: 0, samplingFactor: 1000);
-    for (var frame in images) {
-      encoder.addFrame(frame);
-    }
-    var animation = encoder.finish();
-
-    File('finishedGIF.gif').writeAsBytesSync(animation);
-  }
-
+  
   Image getPiece(String piece, int xPos, int yPos) {
     var imagePart;
     final image = decodeGif(File('sprite.gif').readAsBytesSync());
