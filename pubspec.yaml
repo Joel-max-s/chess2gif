@@ -1,0 +1,9 @@
+name: chess2gif
+version: 0.0.1
+description:
+  Convert chessgames from a pgn to a gif
+environment:
+  sdk: '>=2.10.0 <3.0.0'
+dependencies:
+  image: ^3.0.1
+  chess: ^0.6.6
