@@ -8,7 +8,8 @@ class PGNParser {
     RegExp firstSplit = new RegExp(r'[0-9]+.\ *(([a-zA-Z0-9+-]+\ [a-zA-Z0-9+-]+\ )|([a-zA-Z0-9+-]+\ ))');
     RegExp secondSplit = new RegExp(r'[a-zA-Z][a-zA-Z0-9+-]+');
 
-    String pgn = File('testGame.pgn').readAsStringSync().replaceAll('\n', ' '); 
+    String pgn = File('test2.pgn').readAsStringSync().replaceAll('\n', ' ');
+    pgn += ' ';
     
     print(pgn);
 
@@ -37,15 +38,26 @@ class PGNParser {
 
     for (var move in moves) {
       var turned = chess.turn;
+      var whiteTurned = false;
+      if (turned.toString() == 'Color.WHITE')
+        whiteTurned = true;
       print(turned);
       chess.move(move);
       FENs[0].add(chess.generate_fen());
       if(chess.in_check || chess.in_checkmate) {
-        if (turned.toString() == 'Color.WHITE')
+        if (whiteTurned)
           FENs[1].add('c');
         else
           FENs[1].add('C');
       }
+      else if(move == 'O-O' && whiteTurned)
+        FENs[1].add('S');
+      else if(move == 'O-O-O' && whiteTurned)
+        FENs[1].add('L');
+      else if(move == 'O-O' && !whiteTurned)
+        FENs[1].add('s');
+      else if(move == 'O-O-O' && !whiteTurned)
+        FENs[1].add('l');
       else
         FENs[1].add('');
     }

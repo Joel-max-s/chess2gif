@@ -6,8 +6,11 @@ class FEN2Rep {
 
     for (var i = 0; i < fens[0].length; i++) {
       var fen = fens[0][i];
-      var check = fens[1][i];
+      print(fen);
+      var moreInfo = fens[1][i];
       fen = fen.replaceAll(new RegExp(r'\ .*'), '');
+      print(fen);
+      print(fen.length);
       var boardRepresentation = List.generate(
           8, (i) => List.generate(8, (index) => '', growable: false),
           growable: false);
@@ -18,13 +21,33 @@ class FEN2Rep {
           if (fen[counter] == '/') {
             counter++;
             k--;
-          } else if((fen[counter] == 'K' && check == 'C') || (fen[counter] == 'k' && check == 'c')) {
+          } else if (temp != 0) {
+            k += temp - 1;
+            counter++;
+          } else if((fen[counter] == 'K' && moreInfo == 'C') || (fen[counter] == 'k' && moreInfo == 'c')) {
             String position = fen[counter];
             position += '+';
             boardRepresentation[j][k] = position;
             counter++;
-          } else if (temp != 0) {
-            k += temp - 1;
+          } else if((j == 0 && k > 4) && moreInfo == 's') {
+            String position = fen[counter];
+            position += 's';
+            boardRepresentation[j][k] = position;
+            counter++;
+          } else if((j == 7 && k > 4) && moreInfo == 'S') {
+            String position = fen[counter];
+            position += 'S';
+            boardRepresentation[j][k] = position;
+            counter++;
+          } else if((j == 0 && k < 5) && moreInfo == 'l') {
+            String position = fen[counter];
+            position += 'l';
+            boardRepresentation[j][k] = position;
+            counter++;
+          } else if((j == 7 && k < 5) && moreInfo == 'L') {
+            String position = fen[counter];
+            position += 'L';
+            boardRepresentation[j][k] = position;
             counter++;
           } else {
             String position = fen[counter];
