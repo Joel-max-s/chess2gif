@@ -7,3 +7,6 @@ environment:
 dependencies:
   image: ^3.0.1
   chess: ^0.6.6
+  pgn_parser:
+    path: /home/joel/Dokumente/Projekte/chess2gif/pgn-parser.dart-master
+publish_to: none

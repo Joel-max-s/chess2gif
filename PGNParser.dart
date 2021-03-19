@@ -1,67 +1,77 @@
+import 'package:pgn_parser/pgn_parser.dart' as parse;
 import 'package:chess/chess.dart';
 import 'dart:io';
 
 class PGNParser {
-
-  List<List<String>> parsePGN() {
-
-    RegExp firstSplit = new RegExp(r'[0-9]+.\ *(([a-zA-Z0-9+-]+\ [a-zA-Z0-9+-]+\ )|([a-zA-Z0-9+-]+\ ))');
-    RegExp secondSplit = new RegExp(r'[a-zA-Z][a-zA-Z0-9+-]+');
-
-    String pgn = File('test2.pgn').readAsStringSync().replaceAll('\n', ' ');
-    pgn += ' ';
-    
-    print(pgn);
-
-    Iterable<Match> firstSplitPGN = firstSplit.allMatches(pgn);
-
-    firstSplitPGN.forEach((m)=>print(m.group(0)));
-
-    List<String> secondSplitPGN = new List.empty(growable: true);
-    for (var m in firstSplitPGN) {
-
-      Iterable<Match> temp = secondSplit.allMatches(m.group(0));
-
-      temp.forEach((e)=>secondSplitPGN.add(e.group(0)));
+  int lastEPSquare = -1;
+  List<List<List<String>>> parsePGN() {
+    print('lol');
+    parse.PgnParser pgnParser = new parse.PgnParser();
+    print('lol');
+    String pgn = File('test.pgn').readAsStringSync();
+    print('lol');
+    List<parse.PgnGame> games = pgnParser.parse(pgn);
+    print('lol');
+    //games.removeRange(2, games.length);
+    List<List<List<String>>> FENs = List.empty(growable: true);
+    for (var game in games) {
+      var moves = game.moves();
+      List<String> movesAsRaw = List.empty(growable: true);
+      for (var move in moves) {
+        print(move.san);
+        movesAsRaw.add(move.raw);
+      }
+      FENs.add(generateFENS(movesAsRaw));
+      print(game.pgn());
+      //print(game.pgn());
     }
-
-    secondSplitPGN.forEach((m)=>print(m));
-    
-    List<List<String>> FENs = generateFENS(secondSplitPGN);
-
     return FENs;
   }
 
   List<List<String>> generateFENS(List<String> moves) {
     Chess chess = new Chess();
-    List<List<String>> FENs = [['rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'], ['']];
+    List<List<String>> FENs = [
+      ['rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'],
+      ['']
+    ];
 
     for (var move in moves) {
       var turned = chess.turn;
       var whiteTurned = false;
-      if (turned.toString() == 'Color.WHITE')
-        whiteTurned = true;
-      print(turned);
+      if (turned.toString() == 'Color.WHITE') whiteTurned = true;
+      //print(turned);
       chess.move(move);
-      FENs[0].add(chess.generate_fen());
-      if(chess.in_check || chess.in_checkmate) {
-        if (whiteTurned)
-          FENs[1].add('c');
-        else
-          FENs[1].add('C');
+      String square = Chess.SQUARES.keys.firstWhere((p) => Chess.SQUARES[p] == lastEPSquare, orElse: () => null);
+      bool eptake = false;
+      if(square != null) {
+        String ep = chess.get(square).toString();
+        if(ep != 'null')
+          eptake = true;
       }
-      else if(move == 'O-O' && whiteTurned)
+      FENs[0].add(chess.generate_fen());
+      if (chess.in_check || chess.in_checkmate) {
+        if (whiteTurned && !eptake)
+          FENs[1].add('c');
+        else if(whiteTurned && eptake)
+          FENs[1].add('ce');
+        else if(!whiteTurned && !eptake)
+          FENs[1].add('C');
+        else if(!whiteTurned && eptake)
+          FENs[1].add('Ce');
+      } else if (move == 'O-O' && whiteTurned)
         FENs[1].add('S');
-      else if(move == 'O-O-O' && whiteTurned)
+      else if (move == 'O-O-O' && whiteTurned)
         FENs[1].add('L');
-      else if(move == 'O-O' && !whiteTurned)
+      else if (move == 'O-O' && !whiteTurned)
         FENs[1].add('s');
-      else if(move == 'O-O-O' && !whiteTurned)
+      else if (move == 'O-O-O' && !whiteTurned)
         FENs[1].add('l');
       else
         FENs[1].add('');
-    }
 
+      lastEPSquare = chess.ep_square;
+      print(lastEPSquare);
+    }
     return FENs;
   }
 }

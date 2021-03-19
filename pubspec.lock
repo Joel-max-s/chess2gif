@@ -57,6 +57,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.0.2"
+  pgn_parser:
+    dependency: "direct main"
+    description:
+      path: "/home/joel/Dokumente/Projekte/chess2gif/pgn-parser.dart-master"
+      relative: false
+    source: path
+    version: "0.0.0"
   typed_data:
     dependency: transitive
     description:
