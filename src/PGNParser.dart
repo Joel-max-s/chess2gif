@@ -6,8 +6,18 @@ import 'dart:io';
  * Parse the given pgn file
  */
 class PGNParser {
+  //activates logentries
+  bool logIsActive;
   //store the last en passant square
   int lastEPSquare = -1;
+  List<String> whitePlayers = List.empty(growable: true);
+  List<String> blackPlayers = List.empty(growable: true);
+  List<String> whiteElos = List.empty(growable: true);
+  List<String> blackElos = List.empty(growable: true);
+
+  PGNParser(bool log) {
+    logIsActive = log;
+  }
 
   /**
    * parse the given pgn file
@@ -17,13 +27,44 @@ class PGNParser {
     //create a pgn parser and store the pgn in a string
     parse.PgnParser pgnParser = new parse.PgnParser();
     String absolutePath = '/home/joel/Dokumente/Projekte/chess2gif/PGNs/';
-    String fileName = 'test.pgn';
+    String fileName = 'testgames.pgn';
     String pgn = File(absolutePath + fileName).readAsStringSync();
     pgn += ' ';
 
     //Parse the pgn and store the games
     List<parse.PgnGame> games = pgnParser.parse(pgn);
     //games.removeRange(2, games.length);
+    int counter = 1;
+    for (var game in games) {
+      var gameHeaders = game.headers;
+      for (int i = 0; i < game.headers.length; i++) {
+        switch (gameHeaders[i].name) {
+          case 'White':
+            whitePlayers.add(gameHeaders[i].value);
+            break;
+          case 'Black':
+            blackPlayers.add(gameHeaders[i].value);
+            break;
+          case 'WhiteElo':
+            whiteElos.add('(${gameHeaders[i].value})');
+            break;
+          case 'BlackElo':
+            blackElos.add('(${gameHeaders[i].value})');
+            break;
+        }
+      }
+      if (whitePlayers.length != counter) whitePlayers.add('');
+      if (blackPlayers.length != counter) blackPlayers.add('');
+      if (whiteElos.length != counter) whiteElos.add('');
+      if (blackElos.length != counter) blackElos.add('');
+      if (logIsActive) {
+        print(whitePlayers.toString());
+        print(blackPlayers.toString());
+        print(whiteElos.toString());
+        print(blackElos.toString());
+      }
+      counter++;
+    }
 
     //a 3D List wich contains games, int the game the given fens and some extra information
     List<List<List<String>>> FENs = List.empty(growable: true);
@@ -33,12 +74,13 @@ class PGNParser {
       var moves = game.moves();
       List<String> movesAsRaw = List.empty(growable: true);
       for (var move in moves) {
-        print(move.san);
+        if(logIsActive)
+          print(move.san);
         movesAsRaw.add(move.raw);
       }
       FENs.add(generateFENS(movesAsRaw));
-      print(game.pgn());
-      //print(game.pgn());
+      if(logIsActive)
+        print(game.pgn());
     }
     return FENs;
   }
@@ -62,18 +104,20 @@ class PGNParser {
       var whiteTurned = false;
 
       //if white turned
-      if (turned.toString() == 'Color.WHITE') 
-        whiteTurned = true;
+      if (turned.toString() == 'Color.WHITE') whiteTurned = true;
       chess.move(move);
 
       //check if en passant happend
-      String square = Chess.SQUARES.keys.firstWhere((p) => Chess.SQUARES[p] == lastEPSquare, orElse: () => null);
+      String square = Chess.SQUARES.keys.firstWhere(
+          (p) => Chess.SQUARES[p] == lastEPSquare,
+          orElse: () => null);
       bool eptake = false;
-      if(square != null) {
-        if(chess.get(square) != null) {
+      if (square != null) {
+        if (chess.get(square) != null) {
           PieceType pieceOnEpSquare = chess.get(square).type;
-          print(pieceOnEpSquare.toString());
-          if(pieceOnEpSquare.toString() == 'p') {
+          if(logIsActive)
+            print(pieceOnEpSquare.toString());
+          if (pieceOnEpSquare.toString() == 'p') {
             eptake = true;
           }
         }
@@ -84,11 +128,11 @@ class PGNParser {
       if (chess.in_check || chess.in_checkmate) {
         if (whiteTurned && !eptake)
           FENs[1].add('c');
-        else if(whiteTurned && eptake)
+        else if (whiteTurned && eptake)
           FENs[1].add('c' + lastEPSquare.toString());
-        else if(!whiteTurned && !eptake)
+        else if (!whiteTurned && !eptake)
           FENs[1].add('C');
-        else if(!whiteTurned && eptake)
+        else if (!whiteTurned && eptake)
           FENs[1].add('C' + lastEPSquare.toString());
       } else if (move == 'O-O' && whiteTurned)
         FENs[1].add('S');
@@ -98,12 +142,11 @@ class PGNParser {
         FENs[1].add('s');
       else if (move == 'O-O-O' && !whiteTurned)
         FENs[1].add('l');
-      else if(eptake)
+      else if (eptake)
         FENs[1].add(' ' + lastEPSquare.toString());
       else
         FENs[1].add('');
 
-      print(FENs[1]);
       //store the last possible en passant square
       lastEPSquare = chess.ep_square;
     }

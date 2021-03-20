@@ -10,6 +10,22 @@ class Rep2GIF {
   final sprite = decodeGif(File('/home/joel/Dokumente/Projekte/chess2gif/sprites/sprite.gif').readAsBytesSync());
   //Store the piece-sprites in a 2D List
   List<List<Image>> sprites = List.generate(8, (i) => List.generate(8, (j) => null));
+  String whitePlayer;
+  String blackPlayer;
+  String whiteElo;
+  String blackElo;
+  //offset for playernames and playerelos
+  int offset;
+  //activates logentries
+  bool logIsActive;
+
+  Rep2GIF(String wP, String bP, String wE, String bE, bool log) {
+    whitePlayer = wP;
+    blackPlayer = bP;
+    whiteElo = wE;
+    blackElo = bE;
+    logIsActive = log;
+  }
   
   /**
    * render a gif-animation for a game
@@ -30,9 +46,16 @@ class Rep2GIF {
       Image newImage;
       //for the first image: Make usernames on top and bottom
       if(count == 0) {
-        newImage = new Image(1440, 1640);
-        drawString(newImage, arial_48, 20, 20, 'KJJ01');
-        drawString(newImage, arial_48, 20, 1560, 'other Player');
+        if(whitePlayer != '' && blackPlayer != '') {
+          newImage = new Image(1440, 1640);
+          offset = 100;
+          drawString(newImage, arial_48, 26, 26, '$blackPlayer $blackElo');
+          drawString(newImage, arial_48, 26, 1566, '$whitePlayer $whiteElo');
+        }
+        else {
+          newImage = new Image(1440, 1440);
+          offset = 0;
+        }
       }
 
       //for the other images: copy the last image and manipulate them, this is way more performant
@@ -63,20 +86,21 @@ class Rep2GIF {
             
             //calculate the piece and copy it to the right position
             var piece = getPiece(rep[i][j], i, j, changeColor);
-            copyInto(newImage, piece, dstX: j * 180, dstY: i * 180 + 100);
+            copyInto(newImage, piece, dstX: j * 180, dstY: i * 180 + offset);
           }
 
           //remove the 'moved' color from the move that was played 2 moves ago
           else if(count > 1 && reps[count - 2][i][j] != reps[count - 1][i][j]) {
             var piece = getPiece(rep[i][j], i, j, false);
-            copyInto(newImage, piece, dstX: j * 180, dstY: i * 180 + 100);
+            copyInto(newImage, piece, dstX: j * 180, dstY: i * 180 + offset);
           }
         }
       }
       //add the calculated Image to the encoder
       encoder.addFrame(newImage);
       lastimage = newImage;
-      print('${count + 1} from ${reps.length} are ready');
+      if(logIsActive)
+        print('${count + 1} from ${reps.length} are ready');
       count++;
     }
     //render the animation
