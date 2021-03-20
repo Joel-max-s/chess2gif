@@ -15,11 +15,12 @@ class FEN2Rep {
           8, (i) => List.generate(8, (index) => '', growable: false),
           growable: false);
       int counter = 0;
-      //TODO: enpassant (aus epsquare ausrechnen welcher blank sein muss)
 
       int enpassentSquare = -1;
-      if(moreInfo.length > 1)
+      if(moreInfo.length > 1) {
         enpassentSquare = getNumber(moreInfo.substring(1));
+      }
+        
       for (var j = 0; j < 8; j++) {
         for (var k = 0; k < 8; k++) {
           int temp = getNumber(fen[counter]);
@@ -63,8 +64,23 @@ class FEN2Rep {
         //print(boardRepresentation[j].toString());
       }
       //print('');
-      if(enpassentSquare != -1)
-        //TODO: feld mit markierung versehen das sich nichts ändert wegen enpassanttake
+      if(enpassentSquare != -1) {
+        print('test');
+        if(enpassentSquare < 48) {
+          int row = enpassentSquare ~/ 16 + 1;
+          int column = enpassentSquare % 16;
+          boardRepresentation[row][column] = "-";
+        }
+        else if(enpassentSquare >= 80) {
+          int row = enpassentSquare ~/ 16 - 1;
+          int column = enpassentSquare % 16;
+          boardRepresentation[row][column] = "-";
+        }
+      }
+      for(var rep in boardRepresentation) {
+        print(rep.toString());
+      }
+      print('');
       boardRepresentations.add(boardRepresentation);
     }
     return boardRepresentations;

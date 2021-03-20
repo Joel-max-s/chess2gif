@@ -14,15 +14,22 @@ class Rep2GIF {
     var lastimage;
     for (var rep in reps) {
       Image newImage;
+
+      //for the first image: Make usernames on top and bottom
       if(count == 0) {
         newImage = new Image(1440, 1640);
         drawString(newImage, arial_48, 20, 20, 'KJJ01');
         drawString(newImage, arial_48, 20, 1560, 'other Player');
       }
+
+      //for the other images: copy the last image and manipulate them, this is way more performant
       else
         newImage = lastimage;
+
+      //loop through all squares from the boardrepresentation
       for (int i = 0; i < rep.length; i++) {
         for (int j = 0; j < rep[i].length; j++) {
+          //
           if(count == 0 || reps[count - 1][i][j] != reps[count][i][j]) {
             bool changeColor = true;
             if(i == 0 || i ==7) {
@@ -32,7 +39,7 @@ class Rep2GIF {
             }
             if(count == 0)
               changeColor = false;
-            if(count > 0 && (reps[count - 1][i][j] == 'k+' || reps[count - 1][i][j] == 'K+') && (reps[count][i][j] == 'k' || reps[count][i][j] == 'K'))
+            if(count > 0 && (reps[count - 1][i][j] == 'k+' || reps[count - 1][i][j] == 'K+') && (reps[count][i][j] == 'k' || reps[count][i][j] == 'K') || reps[count][i][j] == '-')
               changeColor = false;
             var piece = getPiece(rep[i][j], i, j, changeColor);
             copyInto(newImage, piece, dstX: j * 180, dstY: i * 180 + 100);

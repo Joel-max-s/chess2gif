@@ -5,13 +5,10 @@ import 'dart:io';
 class PGNParser {
   int lastEPSquare = -1;
   List<List<List<String>>> parsePGN() {
-    print('lol');
     parse.PgnParser pgnParser = new parse.PgnParser();
-    print('lol');
     String pgn = File('test.pgn').readAsStringSync();
-    print('lol');
+    pgn += ' ';
     List<parse.PgnGame> games = pgnParser.parse(pgn);
-    print('lol');
     //games.removeRange(2, games.length);
     List<List<List<String>>> FENs = List.empty(growable: true);
     for (var game in games) {
@@ -44,20 +41,26 @@ class PGNParser {
       String square = Chess.SQUARES.keys.firstWhere((p) => Chess.SQUARES[p] == lastEPSquare, orElse: () => null);
       bool eptake = false;
       if(square != null) {
-        String ep = chess.get(square).toString();
-        if(ep != 'null')
-          eptake = true;
+        if(chess.get(square) != null) {
+          PieceType pieceOnEpSquare = chess.get(square).type;
+          print(pieceOnEpSquare.toString());
+          if(pieceOnEpSquare.toString() == 'p') {
+            eptake = true;
+          }
+        }
+        
+          
       }
       FENs[0].add(chess.generate_fen());
       if (chess.in_check || chess.in_checkmate) {
         if (whiteTurned && !eptake)
           FENs[1].add('c');
         else if(whiteTurned && eptake)
-          FENs[1].add('ce');
+          FENs[1].add('c' + lastEPSquare.toString());
         else if(!whiteTurned && !eptake)
           FENs[1].add('C');
         else if(!whiteTurned && eptake)
-          FENs[1].add('Ce');
+          FENs[1].add('C' + lastEPSquare.toString());
       } else if (move == 'O-O' && whiteTurned)
         FENs[1].add('S');
       else if (move == 'O-O-O' && whiteTurned)
@@ -66,11 +69,14 @@ class PGNParser {
         FENs[1].add('s');
       else if (move == 'O-O-O' && !whiteTurned)
         FENs[1].add('l');
+      else if(eptake)
+        FENs[1].add(' ' + lastEPSquare.toString());
       else
         FENs[1].add('');
 
+      print(FENs[1]);
       lastEPSquare = chess.ep_square;
-      print(lastEPSquare);
+      //print(lastEPSquare);
     }
     return FENs;
   }
