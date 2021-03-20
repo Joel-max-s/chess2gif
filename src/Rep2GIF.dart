@@ -2,19 +2,32 @@ import 'package:image/image.dart';
 import 'dart:io';
 
 class Rep2GIF {
-  final sprite = decodeGif(File('sprite.gif').readAsBytesSync());
+  //The absolute Filepath to the Folder with the Sprites
+  String absoluteFilePath = '/home/joel/Dokumente/Projekte/chess2gif/sprites/';
+  //The filename for the Sprite
+  String file = 'sprite.gif';
+  //The decoded Sprite
+  final sprite = decodeGif(File('/home/joel/Dokumente/Projekte/chess2gif/sprites/sprite.gif').readAsBytesSync());
+  //Store the piece-sprites in a 2D List
   List<List<Image>> sprites = List.generate(8, (i) => List.generate(8, (j) => null));
-
-
+  
+  /**
+   * render a gif-animation for a game
+   * @param reps: 3D List that represents the game
+   * @param filename: the filename for the gif-animation
+   */
   void generateGIFImages(List<List<List<String>>> reps, String filename) {
+    //fill the 2D List with Sprites from the Pieces
     prepareSprite();
+    //the encoder for the gif encoding at the end
     GifEncoder encoder = new GifEncoder(delay: 100, repeat: 0, samplingFactor: 100);
-
-    int count = 0;
+    //store the generated image to increase Performance
     var lastimage;
+    
+    int count = 0;
+    //loop through all game positions
     for (var rep in reps) {
       Image newImage;
-
       //for the first image: Make usernames on top and bottom
       if(count == 0) {
         newImage = new Image(1440, 1640);
@@ -26,39 +39,58 @@ class Rep2GIF {
       else
         newImage = lastimage;
 
-      //loop through all squares from the boardrepresentation
+      //loop through all squares from the position
       for (int i = 0; i < rep.length; i++) {
         for (int j = 0; j < rep[i].length; j++) {
-          //
+          //if we are at the first position or the square is different the last time
           if(count == 0 || reps[count - 1][i][j] != reps[count][i][j]) {
             bool changeColor = true;
-            if(i == 0 || i ==7) {
-              changeColor = getIfCastled(i, j, rep[i][j]);
-              if(changeColor == false)
-                rep[i][j] = rep[i][j][0];
-            }
+            //if we are before the first move
             if(count == 0)
               changeColor = false;
-            if(count > 0 && (reps[count - 1][i][j] == 'k+' || reps[count - 1][i][j] == 'K+') && (reps[count][i][j] == 'k' || reps[count][i][j] == 'K') || reps[count][i][j] == '-')
+            //if we are at line 1 or 8, check if castled
+            else if(i == 0 || i ==7) {
+              changeColor = getIfCastled(i, j, rep[i][j]);
+              //if castled
+              if(!changeColor)
+                rep[i][j] = rep[i][j][0];
+            }
+
+            //if we are not in the fist game
+            //or in the last move on the piece was a King or a captured en-passent pawn 
+            else if(count > 0 && (reps[count - 1][i][j] == 'k+' || reps[count - 1][i][j] == 'K+') && (reps[count][i][j] == 'k' || reps[count][i][j] == 'K') || reps[count][i][j] == '-')
               changeColor = false;
+            
+            //calculate the piece and copy it to the right position
             var piece = getPiece(rep[i][j], i, j, changeColor);
             copyInto(newImage, piece, dstX: j * 180, dstY: i * 180 + 100);
           }
+
+          //remove the 'moved' color from the move that was played 2 moves ago
           else if(count > 1 && reps[count - 2][i][j] != reps[count - 1][i][j]) {
             var piece = getPiece(rep[i][j], i, j, false);
             copyInto(newImage, piece, dstX: j * 180, dstY: i * 180 + 100);
           }
         }
       }
+      //add the calculated Image to the encoder
       encoder.addFrame(newImage);
       lastimage = newImage;
-      //print('${count + 1} from ${reps.length} are ready');
+      print('${count + 1} from ${reps.length} are ready');
       count++;
     }
+    //render the animation
     final animation = encoder.finish();
-    File('GIFs/$filename.gif').writeAsBytesSync(animation);
+    File('/home/joel/Dokumente/Projekte/chess2gif/GIFs/$filename.gif').writeAsBytesSync(animation);
   }
 
+  /**
+   * checks if the this move was a castling
+   * @param i: row from the chessboard
+   * @param j: column from the chessboard
+   * @param piece: the chess-piece
+   * @returns bool: if castled false, if not: true
+   */
   bool getIfCastled(int i, int j, String piece) {
     if(piece.contains('s') && i == 0 && (j == 5 || j == 6))
       return false;
@@ -72,6 +104,9 @@ class Rep2GIF {
       return true;
   }
   
+  /**
+   * fill the Sprite 2D Array
+   */
   void prepareSprite() {
     for(int i = 0; i < 8; i++) {
       for(int j = 0; j < 8; j++) {
@@ -80,6 +115,13 @@ class Rep2GIF {
     }
   }
 
+  /**
+   * return the piece that is on the given square
+   * @param piece: The String representation of the piece
+   * @param xPos: the row from the chessboard
+   * @param yPos: the column fron the chessboard
+   * @param islast: if true: mark the square that this piece moved
+   */
   Image getPiece(String piece, int xPos, int yPos, bool islast) {
     var imagePart;
     int offset = 0;
@@ -183,102 +225,4 @@ class Rep2GIF {
     }
     return imagePart;
   }
-
-  /*void blabla() {
-    if ((xPos.isOdd && yPos.isOdd) || (xPos.isEven && yPos.isEven)) {
-      switch (piece) {
-        case 'r':
-          imagePart = copyCrop(sprite, 0 + offset, 720, 180, 180);
-          break;
-        case 'n':
-          imagePart = copyCrop(sprite, 0 + offset, 360, 180, 180);
-          break;
-        case 'b':
-          imagePart = copyCrop(sprite, 0 + offset, 540, 180, 180);
-          break;
-        case 'q':
-          imagePart = copyCrop(sprite, 0 + offset, 900, 180, 180);
-          break;
-        case 'k':
-          imagePart = copyCrop(sprite, 0 + offset, 1080, 180, 180);
-          break;
-        case 'k+':
-          imagePart = copyCrop(sprite, 0, 1260, 180, 180);
-          break;
-        case 'p':
-          imagePart = copyCrop(sprite, 0 + offset, 180, 180, 180);
-          break;
-        case 'R':
-          imagePart = copyCrop(sprite, 720 + offset, 720, 180, 180);
-          break;
-        case 'N':
-          imagePart = copyCrop(sprite, 720 + offset, 360, 180, 180);
-          break;
-        case 'B':
-          imagePart = copyCrop(sprite, 720 + offset, 540, 180, 180);
-          break;
-        case 'Q':
-          imagePart = copyCrop(sprite, 720 + offset, 900, 180, 180);
-          break;
-        case 'K':
-          imagePart = copyCrop(sprite, 720 + offset, 1080, 180, 180);
-          break;
-        case 'K+':
-          imagePart = copyCrop(sprite, 720, 1260, 180, 180);
-          break;
-        case 'P':
-          imagePart = copyCrop(sprite, 720 + offset, 180, 180, 180);
-          break;
-        default:
-          imagePart = copyCrop(sprite, 0 + offset, 0, 180, 180);
-      }
-    } else {
-      switch (piece) {
-        case 'r':
-          imagePart = copyCrop(sprite, 180 + offset, 720, 180, 180);
-          break;
-        case 'n':
-          imagePart = copyCrop(sprite, 180 + offset, 360, 180, 180);
-          break;
-        case 'b':
-          imagePart = copyCrop(sprite, 180 + offset, 540, 180, 180);
-          break;
-        case 'q':
-          imagePart = copyCrop(sprite, 180 + offset, 900, 180, 180);
-          break;
-        case 'k':
-          imagePart = copyCrop(sprite, 180 + offset, 1080, 180, 180);
-          break;
-        case 'k+':
-          imagePart = copyCrop(sprite, 180, 1260, 180, 180);
-          break;
-        case 'p':
-          imagePart = copyCrop(sprite, 180 + offset, 180, 180, 180);
-          break;
-        case 'R':
-          imagePart = copyCrop(sprite, 900 + offset, 720, 180, 180);
-          break;
-        case 'N':
-          imagePart = copyCrop(sprite, 900 + offset, 360, 180, 180);
-          break;
-        case 'B':
-          imagePart = copyCrop(sprite, 900 + offset, 540, 180, 180);
-          break;
-        case 'Q':
-          imagePart = copyCrop(sprite, 900 + offset, 900, 180, 180);
-          break;
-        case 'K':
-          imagePart = copyCrop(sprite, 900 + offset, 1080, 180, 180);
-          break;
-        case 'K+':
-          imagePart = copyCrop(sprite, 900, 1260, 180, 180);
-          break;
-        case 'P':
-          imagePart = copyCrop(sprite, 900 + offset, 180, 180, 180);
-          break;
-        default:
-          imagePart = copyCrop(sprite, 180 + offset, 0, 180, 180);
-      }
-    }
-  }*/
 }

@@ -2,15 +2,33 @@ import 'package:pgn_parser/pgn_parser.dart' as parse;
 import 'package:chess/chess.dart';
 import 'dart:io';
 
+/**
+ * Parse the given pgn file
+ */
 class PGNParser {
+  //store the last en passant square
   int lastEPSquare = -1;
+
+  /**
+   * parse the given pgn file
+   * @returns: a 3D List wich contains games, int the game the given fens and some extra information
+   */
   List<List<List<String>>> parsePGN() {
+    //create a pgn parser and store the pgn in a string
     parse.PgnParser pgnParser = new parse.PgnParser();
-    String pgn = File('test.pgn').readAsStringSync();
+    String absolutePath = '/home/joel/Dokumente/Projekte/chess2gif/PGNs/';
+    String fileName = 'test.pgn';
+    String pgn = File(absolutePath + fileName).readAsStringSync();
     pgn += ' ';
+
+    //Parse the pgn and store the games
     List<parse.PgnGame> games = pgnParser.parse(pgn);
     //games.removeRange(2, games.length);
+
+    //a 3D List wich contains games, int the game the given fens and some extra information
     List<List<List<String>>> FENs = List.empty(growable: true);
+
+    //parse the game and make them to FEN
     for (var game in games) {
       var moves = game.moves();
       List<String> movesAsRaw = List.empty(growable: true);
@@ -25,19 +43,30 @@ class PGNParser {
     return FENs;
   }
 
+  /**
+   * generate FENs
+   * @returns: 2D List with FEN and extra information
+   */
   List<List<String>> generateFENS(List<String> moves) {
     Chess chess = new Chess();
+    //starting Position
     List<List<String>> FENs = [
       ['rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'],
       ['']
     ];
 
+    //make the move to a FEN and add extra position
+    //loop through all moves
     for (var move in moves) {
       var turned = chess.turn;
       var whiteTurned = false;
-      if (turned.toString() == 'Color.WHITE') whiteTurned = true;
-      //print(turned);
+
+      //if white turned
+      if (turned.toString() == 'Color.WHITE') 
+        whiteTurned = true;
       chess.move(move);
+
+      //check if en passant happend
       String square = Chess.SQUARES.keys.firstWhere((p) => Chess.SQUARES[p] == lastEPSquare, orElse: () => null);
       bool eptake = false;
       if(square != null) {
@@ -48,10 +77,10 @@ class PGNParser {
             eptake = true;
           }
         }
-        
-          
       }
       FENs[0].add(chess.generate_fen());
+
+      //add extra information (check, castling, en passant)
       if (chess.in_check || chess.in_checkmate) {
         if (whiteTurned && !eptake)
           FENs[1].add('c');
@@ -75,8 +104,8 @@ class PGNParser {
         FENs[1].add('');
 
       print(FENs[1]);
+      //store the last possible en passant square
       lastEPSquare = chess.ep_square;
-      //print(lastEPSquare);
     }
     return FENs;
   }
