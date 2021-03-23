@@ -27,7 +27,7 @@ class PGNParser {
     //create a pgn parser and store the pgn in a string
     parse.PgnParser pgnParser = new parse.PgnParser();
     String absolutePath = '/home/joel/Dokumente/Projekte/chess2gif/PGNs/';
-    String fileName = 'testgames.pgn';
+    String fileName = 'kjj.pgn';
     String pgn = File(absolutePath + fileName).readAsStringSync();
     pgn += ' ';
 
@@ -74,13 +74,11 @@ class PGNParser {
       var moves = game.moves();
       List<String> movesAsRaw = List.empty(growable: true);
       for (var move in moves) {
-        if(logIsActive)
-          print(move.san);
+        if (logIsActive) print(move.san);
         movesAsRaw.add(move.raw);
       }
       FENs.add(generateFENS(movesAsRaw));
-      if(logIsActive)
-        print(game.pgn());
+      if (logIsActive) print(game.pgn());
     }
     return FENs;
   }
@@ -115,8 +113,7 @@ class PGNParser {
       if (square != null) {
         if (chess.get(square) != null) {
           PieceType pieceOnEpSquare = chess.get(square).type;
-          if(logIsActive)
-            print(pieceOnEpSquare.toString());
+          if (logIsActive) print(pieceOnEpSquare.toString());
           if (pieceOnEpSquare.toString() == 'p') {
             eptake = true;
           }
