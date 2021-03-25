@@ -2,10 +2,10 @@ import 'PGNParser.dart';
 import 'FEN2Rep.dart';
 import 'Rep2GIF.dart';
 
-void main(List<String> args) {
+Future<void> main(List<String> args) async{
   //parse the PGN file
   PGNParser parser = new PGNParser(false);
-  List<List<List<String>>> FENs = parser.parsePGN();
+  List<List<List<String>>> FENs = await parser.parsePGN();
   List<String> whitePlayers = parser.whitePlayers;
   List<String> blackPlayers = parser.blackPlayers;
   List<String> whiteElos = parser.whiteElos;

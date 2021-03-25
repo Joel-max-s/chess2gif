@@ -1,5 +1,6 @@
 import 'package:pgn_parser/pgn_parser.dart' as parse;
 import 'package:chess/chess.dart';
+import 'package:http/http.dart' as http;
 import 'dart:io';
 
 /**
@@ -23,13 +24,14 @@ class PGNParser {
    * parse the given pgn file
    * @returns: a 3D List wich contains games, int the game the given fens and some extra information
    */
-  List<List<List<String>>> parsePGN() {
+  Future<List<List<List<String>>>> parsePGN() async {
     //create a pgn parser and store the pgn in a string
     parse.PgnParser pgnParser = new parse.PgnParser();
-    String absolutePath = '/home/joel/Dokumente/Projekte/chess2gif/PGNs/';
-    String fileName = 'testgames.pgn';
+    /*String absolutePath = '/home/joel/Dokumente/Projekte/chess2gif/PGNs/';
+    String fileName = 'kjj.pgn';
     String pgn = File(absolutePath + fileName).readAsStringSync();
-    pgn += ' ';
+    pgn += ' ';*/
+    String pgn = await downloadFromLichess();
 
     //Parse the pgn and store the games
     List<parse.PgnGame> games = pgnParser.parse(pgn);
@@ -74,13 +76,11 @@ class PGNParser {
       var moves = game.moves();
       List<String> movesAsRaw = List.empty(growable: true);
       for (var move in moves) {
-        if(logIsActive)
-          print(move.san);
+        if (logIsActive) print(move.san);
         movesAsRaw.add(move.raw);
       }
       FENs.add(generateFENS(movesAsRaw));
-      if(logIsActive)
-        print(game.pgn());
+      if (logIsActive) print(game.pgn());
     }
     return FENs;
   }
@@ -115,8 +115,7 @@ class PGNParser {
       if (square != null) {
         if (chess.get(square) != null) {
           PieceType pieceOnEpSquare = chess.get(square).type;
-          if(logIsActive)
-            print(pieceOnEpSquare.toString());
+          if (logIsActive) print(pieceOnEpSquare.toString());
           if (pieceOnEpSquare.toString() == 'p') {
             eptake = true;
           }
@@ -151,5 +150,19 @@ class PGNParser {
       lastEPSquare = chess.ep_square;
     }
     return FENs;
+  }
+
+  Future<String> downloadFromLichess() async {
+    print('please enter lichess link: ');
+    var urlname = stdin.readLineSync();
+    urlname = urlname.trim();
+    urlname = urlname.substring(urlname.indexOf('.org/') + 5, urlname.length - 4);
+    urlname = 'https://lichess.org/game/export/' + urlname;
+    print(urlname);
+    var url = Uri.parse(urlname);
+    var response = await http.get(url);
+    //print('Response status: ${response.statusCode}');
+    //print('Response body: ${response.body}');
+    return response.body;
   }
 }
